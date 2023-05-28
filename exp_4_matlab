@@ -1,0 +1,31 @@
+clear
+N = 10^6 % number of bits or symbols
+rand(&#39;state&#39;,100); % initializing the rand() function
+randn(&#39;state&#39;,200); % initializing the randn() function
+% Transmitter
+ip = rand(1,N)&gt;0.5; % generating 0,1 with equal probability
+s = 2*ip-1; % BPSK modulation 0 -&gt; -1; 1 -&gt; 1
+n = 1/sqrt(2)*[randn(1,N) + j*randn(1,N)]; % white gaussian noise, 0dB variance
+Eb_N0_dB = [-3:10]; % multiple Eb/N0 values
+for ii = 1:length(Eb_N0_dB)
+% Noise addition
+y = s + 10^(-Eb_N0_dB(ii)/20)*n; % additive white gaussian noise
+% receiver - hard decision decoding
+ipHat = real(y)&gt;0;
+% counting the errors
+nErr(ii) = size(find([ip- ipHat]),2);
+end
+simBer = nErr/N; % simulated ber
+theoryBer = 0.5*erfc(sqrt(10.^(Eb_N0_dB/10))); % theoretical ber
+% plot
+close all
+figure
+semilogy(Eb_N0_dB,theoryBer,&#39;b.-&#39;);
+hold on
+semilogy(Eb_N0_dB,simBer,&#39;mx-&#39;);
+axis([-3 10 10^-5 0.5])
+grid on
+legend(&#39;theory&#39;, &#39;simulation&#39;);
+xlabel(&#39;Eb/No, dB&#39;);
+ylabel(&#39;Bit Error Rate&#39;);
+title(&#39;Bit error probability curve for BPSK modulation&#39;);
